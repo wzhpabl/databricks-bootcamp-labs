@@ -1,0 +1,263 @@
+{
+  "datasets": [
+    {
+      "asset_name": "bootcamp_dev.dev_pifthepaf_sales.orders_metrics",
+      "displayName": "Orders Metrics",
+      "name": "orders_metrics"
+    }
+  ],
+  "pages": [
+    {
+      "displayName": "Analysis",
+      "layout": [
+        {
+          "position": {
+            "height": 2,
+            "width": 4,
+            "x": 0,
+            "y": 0
+          },
+          "widget": {
+            "name": "channel_filter",
+            "queries": [
+              {
+                "name": "dashboards/01f1c3e12ebe1550b0bef0a22a36fde6/datasets/01f1c3e167ca115a9982ee03928f04ee_channel",
+                "query": {
+                  "datasetName": "orders_metrics",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`channel`",
+                      "name": "channel"
+                    },
+                    {
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)",
+                      "name": "channel_associativity"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "channel",
+                    "queryName": "dashboards/01f1c3e12ebe1550b0bef0a22a36fde6/datasets/01f1c3e167ca115a9982ee03928f04ee_channel"
+                  }
+                ]
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Channel"
+              },
+              "version": 2,
+              "widgetType": "filter-multi-select"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 6,
+            "width": 12,
+            "x": 0,
+            "y": 2
+          },
+          "widget": {
+            "name": "revenue_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "orders_metrics",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`order_month`",
+                      "name": "order_month"
+                    },
+                    {
+                      "expression": "MEASURE(`revenue`)",
+                      "name": "measure(revenue)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "data": {
+                "queryName": "main_query"
+              },
+              "encodings": {
+                "color": {
+                  "displayName": "order_month",
+                  "fieldName": "order_month",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "x": {
+                  "displayName": "order_month",
+                  "fieldName": "order_month",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "displayName": "revenue",
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue Trend by Month"
+              },
+              "version": 3,
+              "widgetType": "line"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 6,
+            "width": 6,
+            "x": 0,
+            "y": 8
+          },
+          "widget": {
+            "name": "revenue_by_region",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "orders_metrics",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`region`",
+                      "name": "region"
+                    },
+                    {
+                      "expression": "MEASURE(`revenue`)",
+                      "name": "measure(revenue)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "data": {
+                "queryName": "main_query"
+              },
+              "encodings": {
+                "color": {
+                  "displayName": "region",
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "x": {
+                  "displayName": "region",
+                  "fieldName": "region",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "displayName": "revenue",
+                  "fieldName": "measure(revenue)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Revenue by Region"
+              },
+              "version": 3,
+              "widgetType": "bar"
+            }
+          }
+        },
+        {
+          "position": {
+            "height": 6,
+            "width": 6,
+            "x": 6,
+            "y": 8
+          },
+          "widget": {
+            "name": "avg_order_value_by_segment",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "orders_metrics",
+                  "disaggregated": false,
+                  "fields": [
+                    {
+                      "expression": "`segment`",
+                      "name": "segment"
+                    },
+                    {
+                      "expression": "MEASURE(`avg_order_value`)",
+                      "name": "measure(avg_order_value)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "data": {
+                "queryName": "main_query"
+              },
+              "encodings": {
+                "color": {
+                  "displayName": "segment",
+                  "fieldName": "segment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "x": {
+                  "displayName": "segment",
+                  "fieldName": "segment",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "displayName": "avg_order_value",
+                  "fieldName": "measure(avg_order_value)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Avg Order Value by Segment"
+              },
+              "version": 3,
+              "widgetType": "bar"
+            }
+          }
+        }
+      ],
+      "layoutVersion": "GRID_V1",
+      "name": "ba431f23",
+      "pageType": "PAGE_TYPE_CANVAS"
+    }
+  ],
+  "uiSettings": {
+    "applyModeEnabled": false,
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    }
+  }
+}
