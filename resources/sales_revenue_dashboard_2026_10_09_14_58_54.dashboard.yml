@@ -1,0 +1,6 @@
+resources:
+  dashboards:
+    sales_revenue_dashboard_2026_10_09_14_58_54:
+      display_name: "Sales Revenue Dashboard 2026-10-09 14:58:54"
+      warehouse_id: 5291780e11ffd8d3
+      file_path: ../src/sales_revenue_dashboard_2026_10_09_14_58_54.lvdash.json

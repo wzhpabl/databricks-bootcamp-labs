@@ -1,0 +1,38 @@
+# Roll prod back to any earlier commit, tag or branch — PUBLIC repository variant (lab 06).
+name: bundle-rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: Commit SHA, tag or branch to redeploy to prod
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  rollback-prod:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+      - uses: databricks/setup-cli@main
+      - name: Databricks auth (token or service principal)
+        env:
+          PAT: ${{ secrets.DATABRICKS_TOKEN }}
+          SP_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+          SP_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+        run: |
+          if [ -n "$SP_ID" ]; then
+            { echo "DATABRICKS_CLIENT_ID=$SP_ID"; echo "DATABRICKS_CLIENT_SECRET=$SP_SECRET"; } >> "$GITHUB_ENV"
+          else
+            echo "DATABRICKS_TOKEN=$PAT" >> "$GITHUB_ENV"
+          fi
+      - run: databricks bundle plan -t prod
+      - run: databricks bundle deploy -t prod
+      - run: echo "Rolled prod back to ${{ inputs.git_ref }}" >> "$GITHUB_STEP_SUMMARY"

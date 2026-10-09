@@ -1,0 +1,115 @@
+# CI/CD for the bootcamp bundle on GitHub Actions — PUBLIC repository variant (lab 06).
+# Uses GitHub environments: `staging` and `prod` (prod has you as required reviewer).
+#
+# Databricks Free Edition has no account console, so OIDC workload identity federation is not
+# available. Credentials come from repository secrets (lab 00, parts 4–5):
+#   variable DATABRICKS_HOST
+#   secret   DATABRICKS_TOKEN                                  (option A: personal access token)
+#   secrets  DATABRICKS_CLIENT_ID + DATABRICKS_CLIENT_SECRET   (option B: service principal, OAuth M2M)
+name: bundle-cicd
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bundle-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # 1 · Fast feedback, no Databricks access needed
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check src/bootcamp_lib tests
+      - run: pytest -q
+
+  # 2 · Pull requests: validate and show the plan for staging
+  plan-staging:
+    if: github.event_name == 'pull_request'
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@main   # pin a released version for real projects
+      - name: Databricks auth (token or service principal)
+        env:
+          PAT: ${{ secrets.DATABRICKS_TOKEN }}
+          SP_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+          SP_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+        run: |
+          if [ -n "$SP_ID" ]; then
+            { echo "DATABRICKS_CLIENT_ID=$SP_ID"; echo "DATABRICKS_CLIENT_SECRET=$SP_SECRET"; } >> "$GITHUB_ENV"
+          else
+            echo "DATABRICKS_TOKEN=$PAT" >> "$GITHUB_ENV"
+          fi
+      - run: databricks bundle validate -t staging
+      - name: Deployment plan
+        run: |
+          databricks bundle plan -t staging | tee plan.txt
+          { echo '### Bundle plan (staging)'; echo '```'; cat plan.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+  # 3 · main: deploy to staging and run the integration job
+  deploy-staging:
+    if: github.event_name != 'pull_request'
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@main
+      - name: Databricks auth (token or service principal)
+        env:
+          PAT: ${{ secrets.DATABRICKS_TOKEN }}
+          SP_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+          SP_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+        run: |
+          if [ -n "$SP_ID" ]; then
+            { echo "DATABRICKS_CLIENT_ID=$SP_ID"; echo "DATABRICKS_CLIENT_SECRET=$SP_SECRET"; } >> "$GITHUB_ENV"
+          else
+            echo "DATABRICKS_TOKEN=$PAT" >> "$GITHUB_ENV"
+          fi
+      - run: databricks bundle validate -t staging
+      - run: databricks bundle deploy -t staging
+      - name: Integration run (generate → pipeline → quality checks)
+        run: databricks bundle run -t staging orders_job --params batch=${{ github.run_number }}
+
+  # 4 · Promote the same commit to prod after your approval (environment `prod`)
+  deploy-prod:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@main
+      - name: Databricks auth (token or service principal)
+        env:
+          PAT: ${{ secrets.DATABRICKS_TOKEN }}
+          SP_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+          SP_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+        run: |
+          if [ -n "$SP_ID" ]; then
+            { echo "DATABRICKS_CLIENT_ID=$SP_ID"; echo "DATABRICKS_CLIENT_SECRET=$SP_SECRET"; } >> "$GITHUB_ENV"
+          else
+            echo "DATABRICKS_TOKEN=$PAT" >> "$GITHUB_ENV"
+          fi
+      - run: databricks bundle validate -t prod
+      - run: databricks bundle deploy -t prod
+      - run: echo "Deployed ${{ github.sha }} to prod" >> "$GITHUB_STEP_SUMMARY"
