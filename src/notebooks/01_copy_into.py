@@ -35,6 +35,14 @@ display(result)
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ||num_affected_rows||	num_inserted_rows	||num_skipped_corrupt_files||
+# MAGIC ||---||---||---||
+# MAGIC |10000|	10000|	0|
+# MAGIC
+
+# COMMAND ----------
+
 display(spark.sql("SELECT count(*) AS total_rows, count(DISTINCT order_id) AS distinct_orders FROM orders_copy_into"))
 
 # COMMAND ----------

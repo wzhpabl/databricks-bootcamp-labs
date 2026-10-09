@@ -152,7 +152,9 @@ print(f"{model_name} v{latest} is now @champion")
 # COMMAND ----------
 
 fs_version = max(int(v.version) for v in client.search_model_versions(f"name='{model_name_fs}'"))
+
 scored = fe.score_batch(model_uri=f"models:/{model_name_fs}/{fs_version}", df=labels.select("customer_id"))
+
 display(scored.select("customer_id", "prediction").limit(20))
 (scored.select("customer_id", "prediction")
        .withColumnRenamed("prediction", "churn_predicted")

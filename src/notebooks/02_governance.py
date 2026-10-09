@@ -87,6 +87,7 @@ RETURN '***'
 # Step 2 applied a manual mask on customer_profiles.email — only ONE column mask can resolve
 # per column per user, so unset it and let the policy govern it instead.
 spark.sql(f"ALTER TABLE `{catalog}`.`{schema}`.customer_profiles ALTER COLUMN email UNSET MASK")
+##spark.sql(f"ALTER TABLE `{catalog}`.`{schema}`.customer_profiles ALTER COLUMN email DROP MASK")
 
 # Schema-level policy: matches any column carrying the `pii` tag (any value: email, name, ...)
 # and inherits to every table in the schema. Principal-based access lives in TO/EXCEPT, not the UDF.
@@ -98,6 +99,7 @@ COLUMN MASK mask_pii
 TO `All Users` EXCEPT `bootcamp_engineers`
 FOR TABLES
 MATCH COLUMNS has_column_tag('pii') AS pii_col
+--MATCH COLUMNS has_tag('pii') AS pii_col
 ON COLUMN pii_col
 """)
 

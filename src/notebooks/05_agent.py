@@ -169,3 +169,7 @@ print(results.metrics)
 # MAGIC   on `content`) and replace `search_policies` with `VectorSearchClient().get_index(...).similarity_search(...)`.
 # MAGIC   Free Edition allows one AI Search endpoint.
 # MAGIC * **Genie as a tool:** add a tool that asks your lab 03 Genie Agent revenue questions.
+
+# COMMAND ----------
+
+print(support_agent("Refund order 1 now."))

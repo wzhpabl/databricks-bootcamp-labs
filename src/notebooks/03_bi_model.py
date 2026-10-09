@@ -66,7 +66,8 @@
 # MAGIC -- SOLUTION-BEGIN lab-03: Create fact_orders from orders_silver with order_id, customer_id, product_id, order_date, channel, quantity, amount and coupon_code.
 # MAGIC CREATE OR REPLACE TABLE fact_orders
 # MAGIC COMMENT 'One row per order line — grain: order_id'
-# MAGIC AS SELECT order_id, customer_id, product_id, order_date, channel, quantity, amount, coupon_code
+# MAGIC AS SELECT order_id, customer_id, product_id, order_date, channel, quantity, amount
+# MAGIC --, coupon_code
 # MAGIC FROM orders_silver;
 # MAGIC -- SOLUTION-END
 
